@@ -1,11 +1,152 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#define maxFila 5
+#define maxTipoPeca 4
+#define id_inicio 10
 
 // Desafio Tetris Stack
 // Tema 3 - Integração de Fila e Pilha
 // Este código inicial serve como base para o desenvolvimento do sistema de controle de peças.
 // Use as instruções de cada nível para desenvolver o desafio.
+int inicialid=id_inicio;
+
+typedef struct 
+{
+    char nome ;
+    
+    int id;
+}peca;
+
+typedef struct
+{
+    peca fila [maxFila];
+    int inicio ;
+    int fim ;
+    int tamanho ;
+
+}fila;
+
+peca iniciarPeca(){
+    inicialid++;
+    peca p;
+    p.id=inicialid;
+    
+    int n = rand()%maxTipoPeca;
+    switch (n) {
+        case 0: p.nome = 'I'; break;
+        case 1: p.nome = 'T'; break;
+        case 2: p.nome = 'O'; break;
+        case 3: p.nome = 'L'; break;
+    }
+
+    return p;
+}
+void iniciarFila(fila *f) {
+    f->inicio = 0;
+    f->fim = 0;
+    f->tamanho = 0;
+
+    // Preenche a fila com peças iniciais
+    for (int i = 0; i < maxFila; i++) {
+        peca nova = iniciarPeca();     // gera peça aleatória
+        f->fila[f->fim] = nova;        // insere na fila
+
+        // lógica circular
+        f->fim = (f->fim + 1) % maxFila;
+        f->tamanho++;
+    }
+}
+int inserirPeca(fila *f, peca nova) {
+    if (f->tamanho == maxFila) {
+        printf("Fila cheia! Não é possível inserir.\n");
+        return 0;
+    }
+
+    f->fila[f->fim] = nova;
+    f->fim = (f->fim + 1) % maxFila;
+    f->tamanho++;
+
+    return 1;
+}
+int removerPeca(fila *f, peca *removida) {
+    if (f->tamanho == 0) {
+        printf("Fila vazia! Nada para remover.\n");
+        return 0;
+    }
+
+    *removida = f->fila[f->inicio];
+    f->inicio = (f->inicio + 1) % maxFila;
+    f->tamanho--;
+
+    return 1;
+}
+void mostrarFila(fila *f) {
+    printf("\nEstado da fila:\n");
+    printf("Inicio: %d | Fim: %d | Tamanho: %d\n", 
+            f->inicio, f->fim, f->tamanho);
+
+    for (int i = 0; i < maxFila; i++) {
+        printf("[%d] ", i);
+
+        if (i == f->inicio && f->tamanho > 0)
+            printf("INICIO ");
+
+        if (i == f->fim && f->tamanho < maxFila)
+            printf("FIM ");
+
+        if (f->fila[i].id != 0)
+            printf("(%c, %d)", f->fila[i].nome, f->fila[i].id);
+        else
+            printf("(vazio)");
+
+        printf("\n");
+    }
+}
+
+
+
+
 
 int main() {
+    srand (time(NULL));
+    int opcao;
+    fila f;
+
+    printf("---teris---\n");
+
+    do{
+                printf("\n(01)-iniciar fila aleatória\n(02)-adicionar peca\n(03)-remover peça\n(04)-sair\n");
+                printf("escolha uma opção :   ");
+                scanf("%d",&opcao);
+                switch (opcao) {
+                        case 1:
+                            iniciarFila(&f);
+                            mostrarFila(&f);
+                            
+                            break;
+                        case 2:
+                            peca p = iniciarPeca();
+                            inserirPeca(&f,p);
+                            mostrarFila(&f);
+                            break;
+                        case 3:
+                            peca removida;
+                            removerPeca(&f,&removida);
+                            mostrarFila(&f);
+                            printf("peca removida %c %d",removida.nome,removida.id);
+                            break;        
+                        
+                        //default:
+                           // break;
+                        }
+
+      }while (opcao!=4);
+   
+    
+    
+    
+
 
     // 🧩 Nível Novato: Fila de Peças Futuras
     //
