@@ -4,12 +4,14 @@
 #define maxFila 5
 #define maxTipoPeca 4
 #define id_inicio 10
+#define maxPilha 3
 
 // Desafio Tetris Stack
 // Tema 3 - Integração de Fila e Pilha
 // Este código inicial serve como base para o desenvolvimento do sistema de controle de peças.
 // Use as instruções de cada nível para desenvolver o desafio.
 int inicialid=id_inicio;
+
 
 typedef struct 
 {
@@ -26,6 +28,36 @@ typedef struct
     int tamanho ;
 
 }fila;
+typedef struct {
+
+    peca pilha[maxPilha];
+    int topo;
+    
+}pilha;
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define maxFila 5
+#define maxTipoPeca 4
+
+// PROTÓTIPOS AQUI
+void limparBuffer(void);
+peca iniciarPeca(void);
+void iniciarFila(fila *f);
+void preencherFila(fila *f);
+int inserirPeca(fila *f, peca nova);
+int removerPeca(fila *f, peca *removida);
+void mostrarFila(fila *f);
+void iniciarPilha(pilha *pil);
+int inserirPilha(pilha *pil, peca removida);
+int removerPilha(pilha *pil, peca *pecaDaPilha);
+void mostrarPilha(pilha *pil);
+void enviarFilaParaPilha(fila *f, pilha *pil);
+void usarPilhaNaFila(fila *f, pilha *pil);
+
+
 
 peca iniciarPeca(){
     inicialid++;
@@ -42,11 +74,94 @@ peca iniciarPeca(){
 
     return p;
 }
+void limparBuffer(void) {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+
+void iniciarPilha(pilha *pil){
+    pil->topo =-1;
+}
+int inserirPilha(pilha *pil, peca removida){
+    if(pil->topo == maxPilha-1){
+        printf("pilha cheia");
+        return 0;
+    }
+    pil->topo++;
+    pil->pilha[pil->topo]=removida;
+    return 1;
+    
+    
+
+}
+int removerPilha(pilha *pil, peca *pecaDaPilha){
+    if(pil->topo<0){
+        printf("pilha vazia\n");
+        return 0;
+    }else{
+        *pecaDaPilha=pil->pilha[pil->topo];
+        pil->topo--;
+        return 1;
+        
+    }
+}    
+void mostrarPilha(pilha *pil){
+    printf("\nEstado da pilha:\n");
+
+    for (int i = maxPilha - 1; i >= 0; i--){
+        printf("[%d] ", i);
+
+        if (i == pil->topo)
+            printf("TOPO ");
+
+        if (i <= pil->topo)
+            printf("(%c, %d)", pil->pilha[i].nome, pil->pilha[i].id);
+        else
+            printf("(vazio)");
+
+        printf("\n");
+    }
+}
+
+
+void enviarFilaParaPilha(fila *f, pilha *pil){
+    peca retirada;
+
+    if (!removerPeca(f, &retirada))
+        return;
+
+    if (!inserirPilha(pil, retirada)){
+        // se pilha cheia, devolve a peça à fila
+        inserirPeca(f, retirada);
+        return;
+    }
+
+    // mantém fila sempre cheia
+    inserirPeca(f, iniciarPeca());
+}
+void usarPilhaNaFila(fila *f, pilha *pil){
+    peca daPilha, daFila;
+
+    if (!removerPilha(pil, &daPilha))
+        return;
+
+    if (!removerPeca(f, &daFila)){
+        inserirPilha(pil, daPilha);
+        return;
+    }
+
+    inserirPeca(f, daPilha);
+    inserirPeca(f, daFila);
+}
+
 void iniciarFila(fila *f) {
     f->inicio = 0;
     f->fim = 0;
     f->tamanho = 0;
+}
 
+void preencherFila(fila *f){
     // Preenche a fila com peças iniciais
     for (int i = 0; i < maxFila; i++) {
         peca nova = iniciarPeca();     // gera peça aleatória
@@ -56,7 +171,10 @@ void iniciarFila(fila *f) {
         f->fim = (f->fim + 1) % maxFila;
         f->tamanho++;
     }
+
 }
+    
+
 int inserirPeca(fila *f, peca nova) {
     if (f->tamanho == maxFila) {
         printf("Fila cheia! Não é possível inserir.\n");
@@ -110,18 +228,29 @@ void mostrarFila(fila *f) {
 
 int main() {
     srand (time(NULL));
-    int opcao;
     fila f;
+    pilha pil;
+    iniciarPilha(&pil);
+    iniciarFila(&f);
+    int opcao;
+    
 
     printf("---teris---\n");
 
     do{
-                printf("\n(01)-iniciar fila aleatória\n(02)-adicionar peca\n(03)-remover peça\n(04)-sair\n");
-                printf("escolha uma opção :   ");
+                printf("\n(01)-Iniciar fila\n");
+                printf("(02)-Adicionar peça\n");
+                printf("(03)-Jogar peça (fila)\n");
+                printf("(04)-Enviar peça para reserva\n");
+                printf("(05)-Usar peça da reserva\n");
+                printf("(06)-Mostrar fila e pilha\n");
+                printf("(07)-Sair\n");
+
                 scanf("%d",&opcao);
+                limparBuffer();
                 switch (opcao) {
                         case 1:
-                            iniciarFila(&f);
+                            preencherFila(&f);
                             mostrarFila(&f);
                             
                             break;
@@ -132,9 +261,27 @@ int main() {
                             break;
                         case 3:
                             peca removida;
+                            peca subistituta = iniciarPeca();
                             removerPeca(&f,&removida);
                             mostrarFila(&f);
-                            printf("peca removida %c %d",removida.nome,removida.id);
+                            printf("\npeca removida %c %d",removida.nome,removida.id);
+                            inserirPeca(&f,subistituta);
+                            printf("\npeca adicionada %c %d",subistituta.nome,subistituta.id);
+                            mostrarFila(&f);
+                        case 4:
+                            enviarFilaParaPilha(&f, &pil);
+                            break;
+
+                        case 5:
+                            usarPilhaNaFila(&f, &pil);
+                            break;
+
+                        case 6:
+                            mostrarFila(&f);
+                            mostrarPilha(&pil);
+                            break;
+    
+
                             break;        
                         
                         //default:
