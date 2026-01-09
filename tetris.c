@@ -136,6 +136,7 @@ void enviarFilaParaPilha(fila *f, pilha *pil){
         inserirPeca(f, retirada);
         return;
     }
+    printf("\npeça %c %d retirada da fila\n",retirada.nome,retirada.id);
 
     // mantém fila sempre cheia
     inserirPeca(f, iniciarPeca());
@@ -240,11 +241,12 @@ int main() {
     do{
                 printf("\n(01)-Iniciar fila\n");
                 printf("(02)-Adicionar peça\n");
-                printf("(03)-Jogar peça (fila)\n");
+                printf("(03)-Jogar peça (remover da fila)\n");
                 printf("(04)-Enviar peça para reserva\n");
                 printf("(05)-Usar peça da reserva\n");
                 printf("(06)-Mostrar fila e pilha\n");
                 printf("(07)-Sair\n");
+                printf("escolha uma opção : ");
 
                 scanf("%d",&opcao);
                 limparBuffer();
@@ -288,7 +290,7 @@ int main() {
                            // break;
                         }
 
-      }while (opcao!=4);
+      }while (opcao!=7);
    
     
     
