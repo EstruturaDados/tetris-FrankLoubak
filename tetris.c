@@ -56,6 +56,8 @@ int removerPilha(pilha *pil, peca *pecaDaPilha);
 void mostrarPilha(pilha *pil);
 void enviarFilaParaPilha(fila *f, pilha *pil);
 void usarPilhaNaFila(fila *f, pilha *pil);
+int trocarTresFilaPilha(fila *f, pilha *pil);
+
 
 
 
@@ -85,7 +87,7 @@ void iniciarPilha(pilha *pil){
 }
 int inserirPilha(pilha *pil, peca removida){
     if(pil->topo == maxPilha-1){
-        printf("pilha cheia");
+        printf("pilha cheia\n");
         return 0;
     }
     pil->topo++;
@@ -163,20 +165,15 @@ void iniciarFila(fila *f) {
 }
 
 void preencherFila(fila *f){
-    // Preenche a fila com peças iniciais
     for (int i = 0; i < maxFila; i++) {
-        peca nova = iniciarPeca();     // gera peça aleatória
-        f->fila[f->fim] = nova;        // insere na fila
-
-        // lógica circular
-        f->fim = (f->fim + 1) % maxFila;
-        f->tamanho++;
+        inserirPeca(f, iniciarPeca());
     }
-
 }
+
     
 
 int inserirPeca(fila *f, peca nova) {
+   
     if (f->tamanho == maxFila) {
         printf("Fila cheia! Não é possível inserir.\n");
         return 0;
@@ -211,7 +208,7 @@ void mostrarFila(fila *f) {
         if (i == f->inicio && f->tamanho > 0)
             printf("INICIO ");
 
-        if (i == f->fim && f->tamanho < maxFila)
+        if (i == f->fim )
             printf("FIM ");
 
         if (f->fila[i].id != 0)
@@ -222,6 +219,44 @@ void mostrarFila(fila *f) {
         printf("\n");
     }
 }
+int trocarTresFilaPilha(fila *f, pilha *pil) {
+    if (f->tamanho < 3) {
+        printf("\nErro: fila não possui 3 peças.\n");
+        return 0;
+    }
+
+    if (pil->topo != 2) {
+        printf("\nErro: pilha deve conter exatamente 3 peças.\n");
+        return 0;
+    }
+
+    peca daFila[3];
+    peca daPilha[3];
+
+    // Remove 3 da fila
+    for (int i = 0; i < 3; i++) {
+        removerPeca(f, &daFila[i]);
+    }
+
+    // Remove 3 da pilha (do topo para baixo)
+    for (int i = 2; i >= 0; i--) {
+        removerPilha(pil, &daPilha[i]);
+    }
+
+    // Insere as 3 da pilha na fila
+    for (int i = 0; i < 3; i++) {
+        inserirPeca(f, daPilha[i]);
+    }
+
+    // Insere as 3 da fila na pilha
+    for (int i = 0; i < 3; i++) {
+        inserirPilha(pil, daFila[i]);
+    }
+
+    printf("\nTroca das 3 peças realizada com sucesso!\n");
+    return 1;
+}
+
 
 
 
@@ -229,10 +264,11 @@ void mostrarFila(fila *f) {
 
 int main() {
     srand (time(NULL));
-    fila f;
+    fila f , filainvertida;
     pilha pil;
     iniciarPilha(&pil);
     iniciarFila(&f);
+    iniciarFila(&filainvertida);
     int opcao;
     
 
@@ -244,8 +280,9 @@ int main() {
                 printf("(03)-Jogar peça (remover da fila)\n");
                 printf("(04)-Enviar peça para reserva\n");
                 printf("(05)-Usar peça da reserva\n");
-                printf("(06)-Mostrar fila e pilha\n");
-                printf("(07)-Sair\n");
+                printf("(06)-exibir estado atual da fila e pilha\n");
+                printf("(07)-trocar as 3 primeiras peças da fila\n");
+                printf("(09)-Sair\n");
                 printf("escolha uma opção : ");
 
                 scanf("%d",&opcao);
@@ -257,9 +294,15 @@ int main() {
                             
                             break;
                         case 2:
-                            peca p = iniciarPeca();
-                            inserirPeca(&f,p);
-                            mostrarFila(&f);
+                            if(f.tamanho<maxFila){
+                                peca p = iniciarPeca();
+                                inserirPeca(&f,p);
+                                mostrarFila(&f);
+
+                            }else{
+                                printf("\nfila cheia\n");
+                            }
+                            
                             break;
                         case 3:
                             peca removida;
@@ -270,18 +313,36 @@ int main() {
                             inserirPeca(&f,subistituta);
                             printf("\npeca adicionada %c %d",subistituta.nome,subistituta.id);
                             mostrarFila(&f);
+                            break;
                         case 4:
-                            enviarFilaParaPilha(&f, &pil);
+                            if(pil.topo<maxPilha){
+                                enviarFilaParaPilha(&f, &pil);
+                                mostrarFila(&f);
+                                mostrarPilha(&pil);
+
+                            } else{
+                                printf("\nPilha cheia!!\n");
+                            }
+                            
                             break;
 
                         case 5:
                             usarPilhaNaFila(&f, &pil);
+                            mostrarFila(&f);
+                            mostrarPilha(&pil);
                             break;
 
                         case 6:
                             mostrarFila(&f);
                             mostrarPilha(&pil);
                             break;
+                        case 7:
+                            if (trocarTresFilaPilha(&f, &pil)) {
+                                mostrarFila(&f);
+                                mostrarPilha(&pil);
+                            }
+                            break;
+   
     
 
                             break;        
@@ -290,7 +351,7 @@ int main() {
                            // break;
                         }
 
-      }while (opcao!=7);
+      }while (opcao!=9);
    
     
     
